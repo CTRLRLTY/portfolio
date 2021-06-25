@@ -1,0 +1,168 @@
+/* Global */
+:root {
+ --terminal-title-color : #6D8086;
+ --page-background-color: #090B0D;
+ --prompt-ps-color: #4D5A5E;
+ --prompt-input-color: #436B24;
+ --tab-label-color: #A074C4;
+ --card-max-width: 640px;
+ --title-base-color: #4E5B5F;
+ --title-anim-delay: 3s;
+ --lgbt-red: #E70000;
+ --lgbt-orange: #FF8C00;
+ --lgbt-yellow: #FFEF00;
+ --lgbt-green: #00811F;
+ --lgbt-blue: #0044FF;
+ --lgbt-purple: #760089;
+  font-family: monospace, monospace;
+  font-size: 20px;
+  color: #E5E5E5;
+}
+
+* {
+  padding: 0px;
+  margin: 0px;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--page-background-color);
+}
+
+/* Animation */
+
+@keyframes rainbowShift {
+  from {
+    fill: var(--colspec);
+  } 
+
+  to {
+    fill: inherit;
+  }
+}
+
+
+#terminal-title-container {
+  height: 70px;
+  background-color: #000;
+}
+
+#terminal-title, #terminal-resolution {
+  color: var(--terminal-title-color)
+}
+
+.prompt-ps {
+  color: var(--prompt-ps-color);
+}
+
+.prompt-input {
+  color: var(--prompt-input-color);
+}
+
+#banner {
+  max-width: 53vw;
+}
+
+#Scr1pti3 {
+  fill: var(--title-base-color);
+}
+
+#S, #C, #R, #I1, #P, #T, #I, #E {
+  --anim-duration: 2s;
+  --anim-delay-per-char: calc(var(--anim-duration) / 8);
+  animation: rainbowShift var(--anim-duration) ease; 
+  animation-iteration-count: infinite;
+  animation-direction: forward;
+  animation-delay: calc(var(--order) * var(--anim-delay-per-char));
+}
+
+#S { --colspec: var(--lgbt-red); --order: 1; }
+#C { --colspec: var(--lgbt-orange); --order: 2; }
+#R { --colspec: var(--lgbt-yellow); --order: 3; }
+#I1 { --colspec: var(--lgbt-green); --order: 4; }
+#P { --colspec: var(--lgbt-green); --order: 5; }
+#T { --colspec: var(--lgbt-blue); --order: 6; }
+#I { --colspec: var(--lgbt-blue); --order: 7; }
+#E { --colspec: var(--lgbt-purple); --order: 8; }
+
+#main-container {
+  margin: 80px 80px 30px 80px;
+}
+
+#main-container .section {
+  margin-top: inherit;
+  margin-bottom: inherit;
+}
+
+.tab {
+  min-width: 150px;
+  justify-content: space-between;
+  display: flex;
+  margin: 0px 25px;
+}
+
+.tab-label {
+  color: var(--tab-label-color);
+}
+
+.card {
+  max-width: var(--card-max-width);
+}
+
+.card-image {
+  height: 240px;
+}
+
+.card-content {
+  background-color: #4D5A5E;
+  height: 240px;
+  padding: 24px;
+}
+
+.card-title {
+  font-weight: 700 !important;
+  margin-bottom: 1rem;
+}
+
+.card-subtitle {
+  font-weight: 400 !important;
+  margin-bottom: 2rem;
+}
+
+.card-footer {
+  height: 51px;
+  background-color: yellow;
+}
+
+
+/*
+  * Modifier Classes
+*/
+
+.flexbox-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.flexbox-row {
+  display: flex;
+}
+
+.flexbox-column {
+  display: flex;
+  flex-direction: column;
+}
+
+/* flexbox-gap polyfill START */
+
+.gap-50 {
+  gap: 50px;
+}
+
+/* flexbox-gap polyfill END */
+
+.overflow-clipped {
+  overflow: hidden;
+}
+
