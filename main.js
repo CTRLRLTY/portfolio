@@ -395,20 +395,26 @@ class CarouselTimeline extends HTMLElement {
 }
 
 var minDesktopWidth = 768; 
+var terminalResolution = document.getElementById('terminal-resolution');
 var addWindowResizeEvent = (() => {
-  const callbackCollection = [];
+  const callbackMap = new Map();
 
-  return (function(element, callback) {
-    callbackCollection.push(callback);
-    window.onresize = () => {
-      for(const c of callbackCollection)
-        c.call(element);
-    }
-  });
+  const runAllCallbacks = (f, elem) => f(elem);
+
+  return (element, callback) => { 
+    callbackMap.set(element, callback);
+    window.onresize = () => callbackMap.forEach(runAllCallbacks);
+  };
 })();
 
+
+terminalResolution.textContent = `${getViewportWidth()}x${getViewportHeight()}`;
 customElements.define('info-table', InfoTable);
 customElements.define('carousel-timeline', CarouselTimeline);
+
+addWindowResizeEvent(terminalResolution, elem => {
+  elem.textContent = `${getViewportWidth()}x${getViewportHeight()}`;
+});
 
 function clamp(n, min, max) {
   return Math.min(Math.max(n, min), max);
