@@ -214,11 +214,13 @@ class CarouselTimeline extends HTMLElement {
     let offsetInitial = itemContainer.offsetLeft; 
     let mouseV1 = 0;
     let mouseV2 = 0;
+    let slideInitial = 0;
+    let slideTerminal = 0;
     
     var dragStart = (ed) => {
       ed.preventDefault();
       if (!this.isSliding()) {
-        this._slideInitial = itemContainer.offsetLeft;
+        slideInitial = itemContainer.offsetLeft;
         this._carouselContainer.onmousemove = dragMove;
         this._carouselContainer.onmouseup = dragEnd; 
         this._carouselContainer.onmouseleave = dragEnd;
@@ -235,8 +237,8 @@ class CarouselTimeline extends HTMLElement {
     }
 
     var dragEnd = (e) => {
-      this._slideTerminal = itemContainer.offsetLeft; 
-      let distance = this._slideTerminal - this._slideInitial;
+      slideTerminal = itemContainer.offsetLeft; 
+      let distance = slideTerminal - slideInitial;
       
       let dir = Math.sign(distance);
       let targetPage = Math.abs(distance) > this.threshold ? clamp(this.currentPage + dir * -1, 1, this.totalPage) : this.currentPage;
@@ -246,15 +248,12 @@ class CarouselTimeline extends HTMLElement {
 
       if(dir)
         if(targetPage == this.currentPage) 
-          this._slide(this._slideInitial);
+          this._slide(slideInitial);
         else 
           this.changePage(targetPage, distance);
     }
  
-    this._slideInitial = 0;
-    this._slideTerminal = 0;
     this._carouselItemSize = this._carouselItemContainer.firstElementChild.clientWidth;
-
     this._setPagination(this.mode);
     this._carouselContainer.onmousedown = dragStart;
     this._carouselContainer.ontouchstart = dragStart;
@@ -263,13 +262,12 @@ class CarouselTimeline extends HTMLElement {
 
     itemContainer.addEventListener('transitionend', () => {
         itemContainer.classList.remove("sliding");
-        this._slideInitial = itemContainer.offsetLeft;
+        slideInitial = itemContainer.offsetLeft;
       }
     );
   }
 
   resizeCallback() {
-    this._slide(0);
     this._setPagination(this.mode);
   }
 
@@ -286,6 +284,9 @@ class CarouselTimeline extends HTMLElement {
   }
 
   _setPagination(media) {
+    if(this.currentPage > 1)
+      this._slide(0);
+
     let fragment = document.createDocumentFragment();
     let pagination = this._getVtElement('pagination', media);
     pagination.childNodes.forEach(page => page.classList.remove('page-active'));
@@ -376,7 +377,6 @@ class CarouselTimeline extends HTMLElement {
   changePage(to, slideDelta = 0) {
     const from = this.currentPage;
     const pageWidth = this._carouselContainer.clientWidth;
-    console.log(this.threshold);
     const distance = to - from;
     const totalGaps = this._carouselItemGap * distance;
     const offset = (distance * pageWidth + totalGaps + slideDelta) * -1;
@@ -395,7 +395,7 @@ class CarouselTimeline extends HTMLElement {
 }
 
 var minDesktopWidth = 768; 
-var addWindowResizeEvent = (function() {
+var addWindowResizeEvent = (() => {
   const callbackCollection = [];
 
   return (function(element, callback) {
