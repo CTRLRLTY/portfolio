@@ -1,0 +1,21 @@
+* {
+  font-family: monospace, monospace;
+  color: #6D8086;
+  padding: 0px;
+  margin: 0px;
+  box-sizing: border-box;
+}
+
+p, .link, .label, .text {
+  font-size: 25px;
+}
+
+p {
+  text-align: justify;
+}
+
+.hline {
+  border: 2px solid #6D8086;
+  height: 0px;
+  flex-grow: 1;
+}

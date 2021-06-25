@@ -1,15 +1,47 @@
-class InfoTable extends HTMLElement {
-  constructor() {
-    super();
+class Node extends HTMLElement {
+  constructor(sharedCSS = null) {
+    super()
 
-    const shadow = this.attachShadow({mode: 'open'});
+    this._vt = new Map();
+    this._vt.set('mobile', new Map());
+    this._vt.set('desktop', new Map());
+    this.attachShadow({mode: 'open'})
+
+    if(sharedCSS) {
+      const externalCSS = document.createElement('link');
+      externalCSS.setAttribute('rel', 'stylesheet');
+      externalCSS.setAttribute('href', sharedCSS);
+      this.shadowRoot.appendChild(externalCSS);
+    }
+
+    if(this.resizeCallback)
+      addWindowResizeEvent(this, this.resizeCallback)
+  }
+
+  _virtualize(id, element) {
+    this._vt.get('mobile').set(id, element.cloneNode(true));
+    this._vt.get('desktop').set(id, element.cloneNode(true));
+  }
+
+  _getVt(media) {
+    return this._vt.get(media);
+  }
+
+  _getVtElement(id, media) {
+    return this._getVt(media).get(id);
+  }
+}
+
+class InfoTable extends Node {
+  constructor() {
+    super('common.css');
+
     const table = document.createElement('table');
     const colgroup = document.createElement('colgroup');
 
     const style = document.createElement('style');   
     const labelColor = '#519ABA';
     const seperatorColor = '#436B24';
-    const textColor = '#E5E5E5';
 
     const nameRow = this._createInfoRow("NAME", "MUHAMMAD RAZNAN");
     const emailRow = this._createInfoRow("EMAIL", "***********@**********.com");
@@ -29,12 +61,11 @@ class InfoTable extends HTMLElement {
         width: 30px;
         color: ${seperatorColor}
       }
-      .text { color: ${textColor} }
     `;
 
     table.append(colgroup, nameRow, emailRow, githubRow);
     
-    shadow.append(style, table)
+    this.shadowRoot.append(style, table)
   }
 
   _createInfoRow(label, value) {
@@ -58,21 +89,15 @@ class InfoTable extends HTMLElement {
   }
 }
 
-class CarouselTimeline extends HTMLElement {
+class CarouselTimeline extends Node {
   constructor() {
-    super();
-
-    const shadow = this.attachShadow({mode: 'open'});
+    super('common.css');
     
     const style = document.createElement('style');   
     const fontColor = '#6D8086';
-
     
     this.currentPage = 1;
     this.carouselItems = [];
-    this._vt = new Map();
-    this._vt.set('mobile', new Map());
-    this._vt.set('desktop', new Map());
     this._carouselItemGap = 50;                      // in pixels
     
     this._carouselContainer = document.createElement('div');
@@ -89,12 +114,6 @@ class CarouselTimeline extends HTMLElement {
       );
 
     style.textContent = `
-      * {
-        padding: 0px;
-        margin: 0px;
-        box-sizing: border-box;
-      } 
-
       .no-select {
         -webkit-touch-callout: none; /* iOS Safari */
         -webkit-user-select: none; /* Safari */
@@ -106,6 +125,7 @@ class CarouselTimeline extends HTMLElement {
 
       .carousel-container {
         margin: inherit;
+        margin-bottom: 0px;
         cursor: pointer;
         position: relative;
         overflow: hidden;
@@ -138,16 +158,6 @@ class CarouselTimeline extends HTMLElement {
         word-spacing: -0.4rem;
       }
 
-      .link, .title, .description {
-        color: ${fontColor}
-      }
-
-      .hline {
-        border: 2px solid ${fontColor};
-        height: 0px;
-        flex-grow: 1;
-      }
-
       .description {
         margin: 1rem 0rem;
         text-align: justify;
@@ -169,7 +179,7 @@ class CarouselTimeline extends HTMLElement {
       }
 
       .pagination {
-        margin-top: 77px;
+        margin-top: 50px;
         display: flex;
         gap: 20px; 
         align-items: center;
@@ -204,9 +214,9 @@ class CarouselTimeline extends HTMLElement {
     this._carouselContainer.appendChild(this._carouselItemContainer);
     this._carouselContainer.setAttribute('class', 'carousel-container no-select');
 
-    addWindowResizeEvent(this._carouselContainer, () => this.resizeCallback());
+    addWindowResizeEvent(this, () => this.resizeCallback());
 
-    shadow.append(style, this._carouselContainer, this._pagination);
+    this.shadowRoot.append(style, this._carouselContainer, this._pagination);
   } 
 
   connectedCallback() {
@@ -305,25 +315,12 @@ class CarouselTimeline extends HTMLElement {
     this._carouselItemContainer.classList.add('sliding');
   }
 
-  _virtualize(id, element) {
-    this._vt.get('mobile').set(id, element.cloneNode(true));
-    this._vt.get('desktop').set(id, element.cloneNode(true));
-  }
-
-  _getVt(media) {
-    return this._vt.get(media);
-  }
-
-  _getVtElement(id, media) {
-    return this._getVt(media).get(id);
-  }
-
   addItem(imgSrc, titleLabel, descContent, linkHref) {
     const itemContainer = document.createElement('div');
     const figure = document.createElement('figure');
     const figureImg = document.createElement('img');
     const headline = document.createElement('div');
-    const title = document.createElement('h3');
+    const title = document.createElement('h2');
     const hline = document.createElement('span');
     const description = document.createElement('p');
     const footer = document.createElement('div');
@@ -406,7 +403,6 @@ var addWindowResizeEvent = (() => {
     window.onresize = () => callbackMap.forEach(runAllCallbacks);
   };
 })();
-
 
 terminalResolution.textContent = `${getViewportWidth()}x${getViewportHeight()}`;
 customElements.define('info-table', InfoTable);

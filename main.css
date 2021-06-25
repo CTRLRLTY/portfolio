@@ -14,15 +14,6 @@
  --lgbt-green: #00811F;
  --lgbt-blue: #0044FF;
  --lgbt-purple: #760089;
-  font-family: monospace, monospace;
-  font-size: 20px;
-  color: #E5E5E5;
-}
-
-* {
-  padding: 0px;
-  margin: 0px;
-  box-sizing: border-box;
 }
 
 body {
@@ -40,7 +31,6 @@ body {
     fill: inherit;
   }
 }
-
 
 #terminal-title-container {
   height: 70px;
@@ -86,7 +76,7 @@ body {
 #E { --colspec: var(--lgbt-purple); --order: 8; }
 
 #main-container {
-  margin: 80px 80px 30px 80px;
+  margin: 120px 80px; 
 }
 
 #main-container .section {
@@ -132,6 +122,10 @@ body {
 .card-footer {
   height: 51px;
   background-color: yellow;
+}
+
+.form-container {
+  margin: 0px 10%;
 }
 
 
