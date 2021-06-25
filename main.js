@@ -67,25 +67,22 @@ class CarouselTimeline extends HTMLElement {
     const style = document.createElement('style');   
     const fontColor = '#6D8086';
 
+    
     this.currentPage = 1;
-    this.totalPage = 0;
-    this._carouselItemGap = 50;
-    this._carouselItemSizes = {
-      mobile: this.parentNode.clientWidth,           //in pixels
-      desktop: (this.parentNode.clientWidth - 50)/2, //in pixels
-    };
+    this.carouselItems = [];
+    this._vt = new Map();
+    this._vt.set('mobile', new Map());
+    this._vt.set('desktop', new Map());
+    this._carouselItemGap = 50;                      // in pixels
+    
     this._carouselContainer = document.createElement('div');
     this._carouselItemContainer = document.createElement('div');
     this._pagination = document.createElement('div');
-    this.carouselItems = [];
     this._pagination.setAttribute('class', 'pagination');
+    this._virtualize('pagination', this._pagination);
 
-    let imgWidth = this._carouselItemSizes.desktop;
-    
-
-
-    for (let x = 0; x < 5; ++x)
-      this.addItem(`https://via.placeholder.com/${imgWidth}x300`, "Lorem Ipsum", 
+    for (let x = 0; x < 5; ++x) // temp
+      this.addItem(`https://via.placeholder.com/300x300`, "Lorem Ipsum", 
         `Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
         Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, 
         when an unknown printer took a galley of type and scrambled it to make a type specimen book.`
@@ -207,13 +204,14 @@ class CarouselTimeline extends HTMLElement {
     this._carouselContainer.appendChild(this._carouselItemContainer);
     this._carouselContainer.setAttribute('class', 'carousel-container no-select');
 
+    addWindowResizeEvent(this._carouselContainer, () => this.resizeCallback());
+
     shadow.append(style, this._carouselContainer, this._pagination);
   } 
 
   connectedCallback() {
     let itemContainer = this._carouselItemContainer;
     let offsetInitial = itemContainer.offsetLeft; 
-    let threshold = this.parentNode.clientWidth * 0.17;
     let mouseV1 = 0;
     let mouseV2 = 0;
     
@@ -241,7 +239,7 @@ class CarouselTimeline extends HTMLElement {
       let distance = this._slideTerminal - this._slideInitial;
       
       let dir = Math.sign(distance);
-      let targetPage = Math.abs(distance) > threshold ? clamp(this.currentPage + dir * -1, 1, this.totalPage) : this.currentPage;
+      let targetPage = Math.abs(distance) > this.threshold ? clamp(this.currentPage + dir * -1, 1, this.totalPage) : this.currentPage;
 
       this._carouselContainer.onmousemove = null;
       this._carouselContainer.onmouseleave = null;
@@ -251,26 +249,54 @@ class CarouselTimeline extends HTMLElement {
           this._slide(this._slideInitial);
         else 
           this.changePage(targetPage, distance);
-      
     }
  
     this._slideInitial = 0;
     this._slideTerminal = 0;
     this._carouselItemSize = this._carouselItemContainer.firstElementChild.clientWidth;
 
-    this._pagination.firstElementChild.classList.add('page-active');
+    this._setPagination(this.mode);
     this._carouselContainer.onmousedown = dragStart;
     this._carouselContainer.ontouchstart = dragStart;
     this._carouselContainer.ontouchend = dragEnd;
+
 
     itemContainer.addEventListener('transitionend', () => {
         itemContainer.classList.remove("sliding");
         this._slideInitial = itemContainer.offsetLeft;
       }
     );
-    addResizeEvent(this._carouselContainer, () => {
-      console.log(this);
-    });
+  }
+
+  resizeCallback() {
+    this._slide(0);
+    this._setPagination(this.mode);
+  }
+
+  get mode() {
+    return isMediaDesktop() ? 'desktop': 'mobile';
+  }
+
+  get totalPage() {
+    return this._pagination.childElementCount;
+  }
+
+  get threshold() {
+    return this.parentNode.clientWidth * 0.17;
+  }
+
+  _setPagination(media) {
+    let fragment = document.createDocumentFragment();
+    let pagination = this._getVtElement('pagination', media);
+    pagination.childNodes.forEach(page => page.classList.remove('page-active'));
+    pagination.firstElementChild.classList.add('page-active');
+
+    fragment.appendChild(this._pagination);
+    fragment.replaceChildren(pagination);
+    this._pagination = pagination;
+    this.shadowRoot.appendChild(fragment);
+
+    this.currentPage = 1;
   }
 
   _slide(pos) {
@@ -278,19 +304,36 @@ class CarouselTimeline extends HTMLElement {
     this._carouselItemContainer.classList.add('sliding');
   }
 
+  _virtualize(id, element) {
+    this._vt.get('mobile').set(id, element.cloneNode(true));
+    this._vt.get('desktop').set(id, element.cloneNode(true));
+  }
+
+  _getVt(media) {
+    return this._vt.get(media);
+  }
+
+  _getVtElement(id, media) {
+    return this._getVt(media).get(id);
+  }
+
   addItem(imgSrc, titleLabel, descContent, linkHref) {
     const itemContainer = document.createElement('div');
     const figure = document.createElement('figure');
     const figureImg = document.createElement('img');
-
     const headline = document.createElement('div');
     const title = document.createElement('h3');
     const hline = document.createElement('span');
-
     const description = document.createElement('p');
-
     const footer = document.createElement('div');
     const link = document.createElement('a');
+    const page = document.createElement('button');
+
+    const pageClickHandle = (e) => {
+      let targetPage = Array.prototype.indexOf.call(this._pagination.children, e.currentTarget) + 1;
+      if(this.currentPage != targetPage)
+        this.changePage(targetPage);
+    };
 
     figureImg.setAttribute('srcset', imgSrc);
     figureImg.onmousedown = e => e.preventDefault();
@@ -315,41 +358,30 @@ class CarouselTimeline extends HTMLElement {
     itemContainer.setAttribute('class', 'carousel-item');
     itemContainer.append(figure, headline, description, footer);
 
+    page.setAttribute('class', 'page');
+    page.onclick = pageClickHandle;
 
-    if(isMediaDesktop()) {
-      if(this.carouselItems.length % 2 == 0)
-        this.addPage();
-    }
-    else {
-      this.addPage();
+    this._getVtElement('pagination', 'mobile').appendChild(page);
+
+    if(this.carouselItems.length % 2 == 0) {
+      let pageClone = page.cloneNode(true);
+      pageClone.onclick = pageClickHandle;
+      this._getVtElement('pagination', 'desktop').appendChild(pageClone);
     }
     
     this._carouselItemContainer.appendChild(itemContainer);
     this.carouselItems.push(itemContainer);
   }
 
-  addPage() {
-    this.totalPage += 1;
-
-    let page = document.createElement('button');
-    page.setAttribute('class', 'page');
-    page.setAttribute('data-index', this._pagination.childElementCount + 1);
-    page.onclick = (e) => {
-      let targetPage = parseInt(e.currentTarget.getAttribute('data-index'));
-      if(this.currentPage != targetPage)
-        this.changePage(targetPage);
-    };
-    this._pagination.appendChild(page);
-  }
-
   changePage(to, slideDelta = 0) {
-    let from = this.currentPage;
-    let pageWidth = this._carouselContainer.clientWidth;
-    let distance = to - from;
-    let totalGaps = this._carouselItemGap * distance;
-    let offset = (distance * pageWidth + totalGaps + slideDelta) * -1;
-    let fromPos = this._carouselItemContainer.offsetLeft; 
-    let toPos = fromPos + offset; 
+    const from = this.currentPage;
+    const pageWidth = this._carouselContainer.clientWidth;
+    console.log(this.threshold);
+    const distance = to - from;
+    const totalGaps = this._carouselItemGap * distance;
+    const offset = (distance * pageWidth + totalGaps + slideDelta) * -1;
+    const fromPos = this._carouselItemContainer.offsetLeft; 
+    const toPos = fromPos + offset; 
     
     this._slide(toPos);
     this._pagination.children[from - 1].classList.remove('page-active')
@@ -363,25 +395,15 @@ class CarouselTimeline extends HTMLElement {
 }
 
 var minDesktopWidth = 768; 
-var addResizeEvent = (function() {
+var addWindowResizeEvent = (function() {
   const callbackCollection = [];
 
-  if(window.ResizeObserver) {
-    return (function(element, callback) {
-      const resizeObserver = new ResizeObserver(callback);
-      resizeObserver.observe(element);
-      return resizeObserver;
-    });
-  }
-
-  // Polyfill for ResizeObserver
   return (function(element, callback) {
     callbackCollection.push(callback);
     window.onresize = () => {
       for(const c of callbackCollection)
         c.call(element);
     }
-    return null;
   });
 })();
 
