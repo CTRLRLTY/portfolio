@@ -5,7 +5,7 @@ class Node extends HTMLElement {
     this._vt = new Map();
     this._vt.set('mobile', new Map());
     this._vt.set('desktop', new Map());
-    this.attachShadow({mode: 'open'})
+    this.attachShadow({mode: 'open'});
 
     if(sharedCSS) {
       const externalCSS = document.createElement('link');
@@ -15,7 +15,8 @@ class Node extends HTMLElement {
     }
 
     if(this.resizeCallback)
-      addWindowResizeEvent(this, this.resizeCallback)
+      addWindowResizeEvent(this, () => this.resizeCallback())
+    
   }
 
   _virtualize(id, element) {
@@ -29,6 +30,66 @@ class Node extends HTMLElement {
 
   _getVtElement(id, media) {
     return this._getVt(media).get(id);
+  }
+}
+
+class HorizontalLine extends HTMLElement {
+  constructor() {
+    super();
+    
+    const shadow = this.attachShadow({mode: 'open'});
+    const style = document.createElement('style');
+    this.hline = document.createElement('span');
+    this.wrapper = document.createElement('div');
+    this.hline.setAttribute('class', 'hline');
+
+    style.textContent = `
+      div {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .hline {
+        border: 2px solid #6D8086;
+        flex-grow: 1;
+      } 
+    `;  
+
+    this._updateContent();
+    shadow.append(style, this.wrapper);
+  }
+
+  connectedCallback() {
+    let duplicateParentCSS = this.getAttribute('data-duplicate-styles');
+
+    if(duplicateParentCSS) {
+      let DOMRoot = this.getRootNode();
+      for(const style of DOMRoot.styleSheets) 
+        this.shadowRoot.insertBefore(style.ownerNode.cloneNode(true), this.shadowRoot.firstChild)
+    }
+
+    this._updateContent();
+  }
+
+  _updateContent() {
+    if(this.firstChild) {
+      const direction = this.getAttribute('data-direction');
+      const gap = this.getAttribute('data-gap') ? this.getAttribute('data-gap') : "20px";
+      this.firstChild.style.textTransform = "uppercase";
+
+      if(direction == "right") {
+        this.firstChild.style.marginLeft = gap;
+        this.wrapper.append(this.hline, this.firstChild);
+      }
+      else {
+        this.firstChild.style.marginRight = gap;
+        this.wrapper.append(this.firstChild, this.hline);
+      }
+
+    } else {
+        this.wrapper.appendChild(this.hline);
+    }
   }
 }
 
@@ -90,6 +151,28 @@ class InfoTable extends Node {
 }
 
 class CarouselTimeline extends Node {
+   _setPagination(media) {
+    if(this.currentPage > 1)
+      this._slide(0);
+
+    let fragment = document.createDocumentFragment();
+    let pagination = this._getVtElement('pagination', media);
+    pagination.childNodes.forEach(page => page.classList.remove('page-active'));
+    pagination.firstElementChild.classList.add('page-active');
+
+    fragment.appendChild(this._pagination);
+    fragment.replaceChildren(pagination);
+    this._pagination = pagination;
+    this.shadowRoot.appendChild(fragment);
+
+    this.currentPage = 1;
+  }
+
+  _slide(pos) {
+    this._carouselItemContainer.style.left = `${pos}px`;
+    this._carouselItemContainer.classList.add('sliding');
+  }
+
   constructor() {
     super('common.css');
     
@@ -142,34 +225,13 @@ class CarouselTimeline extends Node {
         min-width: 100%; 
       }
 
-      .headline {
-        margin-top: 1rem;
-        display: flex;
-        align-items: center;
-      }
-
-      .title {
-        margin-right: 1rem;
-      }
-
-      .link, .title {
-        font-weight: 700 !important;
-        text-transform: uppercase;
-        word-spacing: -0.4rem;
-      }
-
       .description {
         margin: 1rem 0rem;
         text-align: justify;
       }
 
-      .footer {
-        display: flex;
-        align-items: center;
-      }
-
       .link {
-        margin-left: 1rem;
+        font-weight: 700 !important;
         text-decoration: none;
         transition: color 600ms ease-out;
       }
@@ -213,8 +275,6 @@ class CarouselTimeline extends Node {
     this._carouselItemContainer.style.left = "0px";
     this._carouselContainer.appendChild(this._carouselItemContainer);
     this._carouselContainer.setAttribute('class', 'carousel-container no-select');
-
-    addWindowResizeEvent(this, () => this.resizeCallback());
 
     this.shadowRoot.append(style, this._carouselContainer, this._pagination);
   } 
@@ -278,6 +338,7 @@ class CarouselTimeline extends Node {
   }
 
   resizeCallback() {
+    console.log(this.totalPage, this.mode);
     this._setPagination(this.mode);
   }
 
@@ -293,37 +354,14 @@ class CarouselTimeline extends Node {
     return this.parentNode.clientWidth * 0.17;
   }
 
-  _setPagination(media) {
-    if(this.currentPage > 1)
-      this._slide(0);
-
-    let fragment = document.createDocumentFragment();
-    let pagination = this._getVtElement('pagination', media);
-    pagination.childNodes.forEach(page => page.classList.remove('page-active'));
-    pagination.firstElementChild.classList.add('page-active');
-
-    fragment.appendChild(this._pagination);
-    fragment.replaceChildren(pagination);
-    this._pagination = pagination;
-    this.shadowRoot.appendChild(fragment);
-
-    this.currentPage = 1;
-  }
-
-  _slide(pos) {
-    this._carouselItemContainer.style.left = `${pos}px`;
-    this._carouselItemContainer.classList.add('sliding');
-  }
-
   addItem(imgSrc, titleLabel, descContent, linkHref) {
     const itemContainer = document.createElement('div');
     const figure = document.createElement('figure');
     const figureImg = document.createElement('img');
-    const headline = document.createElement('div');
     const title = document.createElement('h2');
-    const hline = document.createElement('span');
     const description = document.createElement('p');
-    const footer = document.createElement('div');
+    const hline = document.createElement('h-line');
+    const fline = document.createElement('h-line');
     const link = document.createElement('a');
     const page = document.createElement('button');
 
@@ -337,24 +375,22 @@ class CarouselTimeline extends Node {
     figureImg.onmousedown = e => e.preventDefault();
     figure.appendChild(figureImg);
 
-    headline.setAttribute('class', 'headline')
-    headline.append(title, hline)
-    title.setAttribute('class', 'title');
     title.textContent = titleLabel;
-    hline.setAttribute('class', 'hline');
+    hline.setAttribute('data-duplicate-styles', true);
+    hline.appendChild(title);
 
     description.textContent = descContent;
     description.setAttribute('class', 'description')
 
-    footer.setAttribute('class', 'footer');
-    const fline = hline.cloneNode(true);
     link.setAttribute('href', linkHref);
     link.setAttribute('class', 'link');
-    link.textContent = "read more";
-    footer.append(fline, link);
+    link.textContent = "WAAA";
+    fline.setAttribute('data-duplicate-styles', true);
+    fline.setAttribute('data-direction', 'right');
+    fline.appendChild(link);
 
     itemContainer.setAttribute('class', 'carousel-item');
-    itemContainer.append(figure, headline, description, footer);
+    itemContainer.append(figure, hline, description, fline);
 
     page.setAttribute('class', 'page');
     page.onclick = pageClickHandle;
@@ -405,6 +441,7 @@ var addWindowResizeEvent = (() => {
 })();
 
 terminalResolution.textContent = `${getViewportWidth()}x${getViewportHeight()}`;
+customElements.define('h-line', HorizontalLine);
 customElements.define('info-table', InfoTable);
 customElements.define('carousel-timeline', CarouselTimeline);
 
@@ -417,11 +454,12 @@ function clamp(n, min, max) {
 }
 
 function isMediaDesktop() {
+  console.log(getViewportWidth());
   return getViewportWidth() >= minDesktopWidth;
 }
 
 function getViewportWidth() {
-  return document.documentElement.scrollWidth;
+  return document.documentElement.clientWidth;
 }
 
 function getViewportHeight() {

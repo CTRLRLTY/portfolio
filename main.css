@@ -1,6 +1,6 @@
 /* Global */
 :root {
- --terminal-title-color : #6D8086;
+ --main-color : #6D8086;
  --page-background-color: #090B0D;
  --prompt-ps-color: #4D5A5E;
  --prompt-input-color: #436B24;
@@ -38,7 +38,7 @@ body {
 }
 
 #terminal-title, #terminal-resolution {
-  color: var(--terminal-title-color)
+  color: var(--main-color)
 }
 
 .prompt-ps {
@@ -128,6 +128,42 @@ body {
   margin: 0px 10%;
 }
 
+.form-container > * {
+  margin-top: 120px;
+}
+
+#contact-form {
+  display: grid;
+  grid-template-areas: 'name area' 'email area' 'phone area';
+  gap: 30px;
+  height: 230px;
+}
+
+#contact-form > .form-field {
+  border-style: solid;
+  border-width: 1px 1px 6px 1px;
+  border-color: var(--main-color);
+  padding: 12px 20px;
+  background-color: var(--page-background-color);
+}
+
+#contact-form > .name {
+  grid-area: name;
+}
+
+#contact-form > .email {
+  grid-area: email;
+}
+
+#contact-form > .phone {
+  grid-area: phone;
+}
+
+#contact-form > textarea {
+  grid-area: area;
+  grid-column-start: 2;
+  grid-row-end: span 3;
+}
 
 /*
   * Modifier Classes
