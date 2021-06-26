@@ -2,36 +2,53 @@ class Node extends HTMLElement {
   constructor() {
     super()
 
-    const sharedCSS = this.getAttribute('data-style-href');
     this._vt = new Map();
     this._vt.set('mobile', new Map());
     this._vt.set('desktop', new Map());
+    this._bootstraped = false;
     this.attachShadow({mode: 'open'});
-
-    if(sharedCSS) {
-      const externalCSS = document.createElement('link');
-      externalCSS.setAttribute('rel', 'stylesheet');
-      externalCSS.setAttribute('href', sharedCSS);
-      this.shadowRoot.appendChild(externalCSS);
-    }
 
     if(this._onwindowResize)
       addWindowResizeEvent(this, () => this._onwindowResize())
+
+    this.bootstrapCallback()
+  }
+
+  // This callback is a wrapper for when the code should be either called on construction, or once connected to a document.
+  // This wrapper is a workaround when instantiating custom element using document.createElement and assigning it to a variable
+  // which will run the construction code when it hasn't been attached to a document, making dependant logic on parent properties
+  // to not run.
+  bootstrapCallback() {
+    if(!this._bootstraped) {
+      const duplicateStyles = this.getAttribute('data-duplicate-styles');
+      const sharedCSS = this.getAttribute('data-style-href');
+
+      if(duplicateStyles) {
+        let DOMRoot = this.getRootNode();
+        let styleSheets = DOMRoot.styleSheets;
+        let length = DOMRoot.styleSheets.length;
+
+        for(let i = 0; i < length; ++i) {
+          this.shadowRoot.insertBefore(styleSheets[length - i - 1].ownerNode.cloneNode(true), this.shadowRoot.firstChild)
+        }
+      }
+
+      if(sharedCSS) {
+        const externalCSS = document.createElement('link');
+        externalCSS.setAttribute('rel', 'stylesheet');
+        externalCSS.setAttribute('href', sharedCSS);
+        this.shadowRoot.appendChild(externalCSS);
+      }
+
+      this._bootstraped = true;
+    }
   }
 
   connectedCallback() {
-    if(this.isConnected) {
-      let duplicateParentCSS = this.getAttribute('data-duplicate-styles');
+    this.bootstrapCallback()
 
-      if(this._onready)
-        this._onready();
-
-      if(duplicateParentCSS) {
-        let DOMRoot = this.getRootNode();
-        for(const style of DOMRoot.styleSheets) 
-          this.shadowRoot.insertBefore(style.ownerNode.cloneNode(true), this.shadowRoot.firstChild)
-      }
-    }
+    if(this._onready)
+      this._onready();
   }
 
   _virtualize(id, element) {
@@ -389,7 +406,7 @@ class CarouselTimeline extends Node {
 
     link.setAttribute('href', linkHref);
     link.setAttribute('class', 'link');
-    link.textContent = "WAAA";
+    link.textContent = "read more";
     fline.setAttribute('data-duplicate-styles', true);
     fline.setAttribute('data-direction', 'right');
     fline.appendChild(link);
