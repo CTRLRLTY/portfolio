@@ -14,8 +14,8 @@ class Node extends HTMLElement {
       this.shadowRoot.appendChild(externalCSS);
     }
 
-    if(this.resizeCallback)
-      addWindowResizeEvent(this, () => this.resizeCallback())
+    if(this.windowResizeCallback)
+      addWindowResizeEvent(this, () => this.windowResizeCallback())
     
   }
 
@@ -337,7 +337,7 @@ class CarouselTimeline extends Node {
     );
   }
 
-  resizeCallback() {
+  windowResizeCallback() {
     console.log(this.totalPage, this.mode);
     this._setPagination(this.mode);
   }
