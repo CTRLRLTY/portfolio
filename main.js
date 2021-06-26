@@ -1,7 +1,8 @@
 class Node extends HTMLElement {
-  constructor(sharedCSS = null) {
+  constructor() {
     super()
 
+    const sharedCSS = this.getAttribute('data-style-href');
     this._vt = new Map();
     this._vt.set('mobile', new Map());
     this._vt.set('desktop', new Map());
@@ -14,9 +15,23 @@ class Node extends HTMLElement {
       this.shadowRoot.appendChild(externalCSS);
     }
 
-    if(this.windowResizeCallback)
-      addWindowResizeEvent(this, () => this.windowResizeCallback())
-    
+    if(this._onwindowResize)
+      addWindowResizeEvent(this, () => this._onwindowResize())
+  }
+
+  connectedCallback() {
+    if(this.isConnected) {
+      let duplicateParentCSS = this.getAttribute('data-duplicate-styles');
+
+      if(this._onready)
+        this._onready();
+
+      if(duplicateParentCSS) {
+        let DOMRoot = this.getRootNode();
+        for(const style of DOMRoot.styleSheets) 
+          this.shadowRoot.insertBefore(style.ownerNode.cloneNode(true), this.shadowRoot.firstChild)
+      }
+    }
   }
 
   _virtualize(id, element) {
@@ -33,11 +48,10 @@ class Node extends HTMLElement {
   }
 }
 
-class HorizontalLine extends HTMLElement {
+class HorizontalLine extends Node {
   constructor() {
     super();
-    
-    const shadow = this.attachShadow({mode: 'open'});
+
     const style = document.createElement('style');
     this.hline = document.createElement('span');
     this.wrapper = document.createElement('div');
@@ -57,18 +71,10 @@ class HorizontalLine extends HTMLElement {
     `;  
 
     this._updateContent();
-    shadow.append(style, this.wrapper);
+    this.shadowRoot.append(style, this.wrapper);
   }
 
-  connectedCallback() {
-    let duplicateParentCSS = this.getAttribute('data-duplicate-styles');
-
-    if(duplicateParentCSS) {
-      let DOMRoot = this.getRootNode();
-      for(const style of DOMRoot.styleSheets) 
-        this.shadowRoot.insertBefore(style.ownerNode.cloneNode(true), this.shadowRoot.firstChild)
-    }
-
+  _onready() {
     this._updateContent();
   }
 
@@ -88,14 +94,14 @@ class HorizontalLine extends HTMLElement {
       }
 
     } else {
-        this.wrapper.appendChild(this.hline);
+      this.wrapper.appendChild(this.hline);
     }
   }
 }
 
 class InfoTable extends Node {
   constructor() {
-    super('common.css');
+    super();
 
     const table = document.createElement('table');
     const colgroup = document.createElement('colgroup');
@@ -125,7 +131,7 @@ class InfoTable extends Node {
     `;
 
     table.append(colgroup, nameRow, emailRow, githubRow);
-    
+
     this.shadowRoot.append(style, table)
   }
 
@@ -151,38 +157,16 @@ class InfoTable extends Node {
 }
 
 class CarouselTimeline extends Node {
-   _setPagination(media) {
-    if(this.currentPage > 1)
-      this._slide(0);
-
-    let fragment = document.createDocumentFragment();
-    let pagination = this._getVtElement('pagination', media);
-    pagination.childNodes.forEach(page => page.classList.remove('page-active'));
-    pagination.firstElementChild.classList.add('page-active');
-
-    fragment.appendChild(this._pagination);
-    fragment.replaceChildren(pagination);
-    this._pagination = pagination;
-    this.shadowRoot.appendChild(fragment);
-
-    this.currentPage = 1;
-  }
-
-  _slide(pos) {
-    this._carouselItemContainer.style.left = `${pos}px`;
-    this._carouselItemContainer.classList.add('sliding');
-  }
-
   constructor() {
-    super('common.css');
-    
+    super();
+
     const style = document.createElement('style');   
     const fontColor = '#6D8086';
-    
+
     this.currentPage = 1;
     this.carouselItems = [];
     this._carouselItemGap = 50;                      // in pixels
-    
+
     this._carouselContainer = document.createElement('div');
     this._carouselItemContainer = document.createElement('div');
     this._pagination = document.createElement('div');
@@ -279,14 +263,14 @@ class CarouselTimeline extends Node {
     this.shadowRoot.append(style, this._carouselContainer, this._pagination);
   } 
 
-  connectedCallback() {
+  _onready() {
     let itemContainer = this._carouselItemContainer;
     let offsetInitial = itemContainer.offsetLeft; 
     let mouseV1 = 0;
     let mouseV2 = 0;
     let slideInitial = 0;
     let slideTerminal = 0;
-    
+
     var dragStart = (ed) => {
       ed.preventDefault();
       if (!this.isSliding()) {
@@ -309,7 +293,7 @@ class CarouselTimeline extends Node {
     var dragEnd = (e) => {
       slideTerminal = itemContainer.offsetLeft; 
       let distance = slideTerminal - slideInitial;
-      
+
       let dir = Math.sign(distance);
       let targetPage = Math.abs(distance) > this.threshold ? clamp(this.currentPage + dir * -1, 1, this.totalPage) : this.currentPage;
 
@@ -319,10 +303,10 @@ class CarouselTimeline extends Node {
       if(dir)
         if(targetPage == this.currentPage) 
           this._slide(slideInitial);
-        else 
-          this.changePage(targetPage, distance);
+      else 
+        this.changePage(targetPage, distance);
     }
- 
+
     this._carouselItemSize = this._carouselItemContainer.firstElementChild.clientWidth;
     this._setPagination(this.mode);
     this._carouselContainer.onmousedown = dragStart;
@@ -331,15 +315,36 @@ class CarouselTimeline extends Node {
 
 
     itemContainer.addEventListener('transitionend', () => {
-        itemContainer.classList.remove("sliding");
-        slideInitial = itemContainer.offsetLeft;
-      }
+      itemContainer.classList.remove("sliding");
+      slideInitial = itemContainer.offsetLeft;
+    }
     );
   }
 
-  windowResizeCallback() {
-    console.log(this.totalPage, this.mode);
+  _onwindowResize() {
     this._setPagination(this.mode);
+  }
+
+  _setPagination(media) {
+    if(this.currentPage > 1)
+      this._slide(0);
+
+    let fragment = document.createDocumentFragment();
+    let pagination = this._getVtElement('pagination', media);
+    pagination.childNodes.forEach(page => page.classList.remove('page-active'));
+    pagination.firstElementChild.classList.add('page-active');
+
+    fragment.appendChild(this._pagination);
+    fragment.replaceChildren(pagination);
+    this._pagination = pagination;
+    this.shadowRoot.appendChild(fragment);
+
+    this.currentPage = 1;
+  }
+
+  _slide(pos) {
+    this._carouselItemContainer.style.left = `${pos}px`;
+    this._carouselItemContainer.classList.add('sliding');
   }
 
   get mode() {
@@ -402,7 +407,7 @@ class CarouselTimeline extends Node {
       pageClone.onclick = pageClickHandle;
       this._getVtElement('pagination', 'desktop').appendChild(pageClone);
     }
-    
+
     this._carouselItemContainer.appendChild(itemContainer);
     this.carouselItems.push(itemContainer);
   }
@@ -415,7 +420,7 @@ class CarouselTimeline extends Node {
     const offset = (distance * pageWidth + totalGaps + slideDelta) * -1;
     const fromPos = this._carouselItemContainer.offsetLeft; 
     const toPos = fromPos + offset; 
-    
+
     this._slide(toPos);
     this._pagination.children[from - 1].classList.remove('page-active')
     this._pagination.children[to - 1].classList.add('page-active');
@@ -425,6 +430,8 @@ class CarouselTimeline extends Node {
   isSliding() {
     return this._carouselItemContainer.classList.contains('sliding');
   }
+
+  
 }
 
 var minDesktopWidth = 768; 
@@ -454,7 +461,6 @@ function clamp(n, min, max) {
 }
 
 function isMediaDesktop() {
-  console.log(getViewportWidth());
   return getViewportWidth() >= minDesktopWidth;
 }
 
