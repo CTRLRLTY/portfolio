@@ -11,7 +11,8 @@ class Node extends HTMLElement {
     if(this._onwindowResize)
       addWindowResizeEvent(this, () => this._onwindowResize())
 
-    this.bootstrapCallback()
+    if(this.parentNode)
+      this.bootstrapCallback()
   }
 
   // This callback is a wrapper for when the code should be either called on construction, or once connected to a document.
@@ -45,7 +46,8 @@ class Node extends HTMLElement {
   }
 
   connectedCallback() {
-    this.bootstrapCallback()
+    if(this.parentNode)
+      this.bootstrapCallback()
 
     if(this._onready)
       this._onready();
