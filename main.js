@@ -3,8 +3,7 @@ class Node extends HTMLElement {
     super()
 
     this._vt = new Map();
-    this._vt.set('mobile', new Map());
-    this._vt.set('desktop', new Map());
+    this._viacc = 0;
     this._bootstraped = false;
     this.attachShadow({mode: 'open'});
 
@@ -15,15 +14,18 @@ class Node extends HTMLElement {
       this.bootstrapCallback()
   }
 
-  // This callback is a wrapper for when the code should be either called on construction, or once connected to a document.
+  // This callback is a wrapper for when the code should be called once either on construction or when connected to a document.
   // This wrapper is a workaround when instantiating custom element using document.createElement and assigning it to a variable
   // which will run the construction code when it hasn't been attached to a document, making dependant logic on parent properties
   // to not run.
   bootstrapCallback() {
     if(!this._bootstraped) {
+      //duplicate the root document stylesheets.
       const duplicateStyles = this.getAttribute('data-duplicate-styles');
+      //create external css
       const sharedCSS = this.getAttribute('data-style-href');
 
+      //duplicated stylesheets will not create bloat, as browsers will optimize same <style> rules.
       if(duplicateStyles) {
         let DOMRoot = this.getRootNode();
         let styleSheets = DOMRoot.styleSheets;
@@ -53,17 +55,27 @@ class Node extends HTMLElement {
       this._onready();
   }
 
-  _virtualize(id, element) {
-    this._vt.get('mobile').set(id, element.cloneNode(true));
-    this._vt.get('desktop').set(id, element.cloneNode(true));
+  // Attach a virtual tree for the element
+  _virtualize(element, mediaList = ['mobile', 'desktop']) {
+    // Each media represent the element version for that media
+    let virtualId = element.getAttribute('data-vi') ? element.getAttribute('data-vi') : this._viacc++;
+
+    element.setAttribute('data-vi', virtualId);
+
+    mediaList.forEach(media => {
+      if(!this._vt.has(media))
+        this._vt.set(media, new Map());
+
+      this._vt.get(media).set(virtualId, element.cloneNode(true));
+    });
   }
 
   _getVt(media) {
     return this._vt.get(media);
   }
 
-  _getVtElement(id, media) {
-    return this._getVt(media).get(id);
+  _getVtElement(element, media) {
+    return this._getVt(media).get(parseInt(element.getAttribute('data-vi')));
   }
 }
 
@@ -190,7 +202,7 @@ class CarouselTimeline extends Node {
     this._carouselItemContainer = document.createElement('div');
     this._pagination = document.createElement('div');
     this._pagination.setAttribute('class', 'pagination');
-    this._virtualize('pagination', this._pagination);
+    this._virtualize(this._pagination);
 
     for (let x = 0; x < 5; ++x) // temp
       this.addItem(`https://via.placeholder.com/300x300`, "Lorem Ipsum", 
@@ -349,7 +361,7 @@ class CarouselTimeline extends Node {
       this._slide(0);
 
     let fragment = document.createDocumentFragment();
-    let pagination = this._getVtElement('pagination', media);
+    let pagination = this._getVtElement(this._pagination, media);
     pagination.childNodes.forEach(page => page.classList.remove('page-active'));
     pagination.firstElementChild.classList.add('page-active');
 
@@ -419,12 +431,12 @@ class CarouselTimeline extends Node {
     page.setAttribute('class', 'page');
     page.onclick = pageClickHandle;
 
-    this._getVtElement('pagination', 'mobile').appendChild(page);
+    this._getVtElement(this._pagination, 'mobile').appendChild(page);
 
     if(this.carouselItems.length % 2 == 0) {
       let pageClone = page.cloneNode(true);
       pageClone.onclick = pageClickHandle;
-      this._getVtElement('pagination', 'desktop').appendChild(pageClone);
+      this._getVtElement(this._pagination, 'desktop').appendChild(pageClone);
     }
 
     this._carouselItemContainer.appendChild(itemContainer);
@@ -449,8 +461,6 @@ class CarouselTimeline extends Node {
   isSliding() {
     return this._carouselItemContainer.classList.contains('sliding');
   }
-
-  
 }
 
 var minDesktopWidth = 768; 
