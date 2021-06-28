@@ -95,19 +95,25 @@ body {
   margin: 120px 80px; 
 }
 
-#main-container .section {
+#main-container > * {
   margin-top: inherit;
   margin-bottom: inherit;
+}
+
+.text-info {
+  display: flex;
+  flex-direction: column;
 }
 
 .tab {
   min-width: 150px;
   justify-content: space-between;
   display: flex;
-  margin: 0px 25px;
+  margin-right: 25px;
+  margin-bottom: 40px;
 }
 
-.tab-label {
+.tab > p {
   color: var(--tab-label-color);
 }
 
@@ -141,7 +147,7 @@ body {
   resize: none;
 }
 
-@media only screen and (max-width: 728px) {
+@media only screen and (max-width: 768px) {
   .input-container > * {
     width: 100%;
     margin-bottom: 30px;
@@ -156,7 +162,11 @@ body {
   }
 }
 
-@media only screen and (min-width: 728px) {
+@media only screen and (min-width: 768px) {
+  .text-info {
+    flex-direction: row;
+  }
+
   .form-container {
     margin: 0px 10%;
   }
