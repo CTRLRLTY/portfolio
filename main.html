@@ -9,7 +9,7 @@
   </head>
   <body>
     <div id="terminal-title-container" class="flexbox-center">
-      <p id="terminal-title">Terminal - <span id="terminal-resolution">2480x3508</span></p>
+      <p id="terminal-title">Terminal - <span id="terminal-resolution">Calculating...</span></p>
     </div>
     <div id="main-container">
       <div id="prompt">
@@ -236,16 +236,19 @@
           <div class="form-container">
             <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur</p>
             <form id="contact-form">
-              <input class="form-field name" name="name"/>
-              <input class="form-field email" name="email"/>
-              <input class="form-field phone" name="phone"/>
-              <textarea class="form-field" name="area"></textarea>
+              <div class="input-container">
+                <input type="text" name="name" placeholder="Full Name: Johnny Sin" required>
+                <input type="email" name="email" placeholder="Email: john22@gmail.com" required>
+                <input type="text" name="subject" placeholder="Subject: Commision" required>
+                <textarea class="form-field" name="area" placeholder="Message..." required></textarea>
+              </div> 
+              <input type="submit"> 
             </form>
           </div>
         </div>
       </div>
+      <h-line data-direction="right"><h3>copyright 2021 Scr1pti3</h3></h-line>
     </div>
-    
     <script src="main.js" type="application/javascript"></script>
   </body>
 </html>

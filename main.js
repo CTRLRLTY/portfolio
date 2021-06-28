@@ -32,7 +32,7 @@ class Node extends HTMLElement {
         let length = DOMRoot.styleSheets.length;
 
         for(let i = 0; i < length; ++i) {
-          this.shadowRoot.insertBefore(styleSheets[length - i - 1].ownerNode.cloneNode(true), this.shadowRoot.firstChild)
+          this.shadowRoot.insertBefore(styleSheets[length - i - 1].ownerNode.cloneNode(true), this.shadowRoot.firstElementChild)
         }
       }
 
@@ -101,27 +101,30 @@ class HorizontalLine extends Node {
       } 
     `;  
 
-    this._updateContent();
+    if(!this._updated)
+      this._updateContent();
     this.shadowRoot.append(style, this.wrapper);
   }
 
   _onready() {
-    this._updateContent();
+    if(!this._updated)
+      this._updateContent();
   }
 
   _updateContent() {
-    if(this.firstChild) {
+    if(this.firstElementChild) {
+      this._updated = true;
       const direction = this.getAttribute('data-direction');
       const gap = this.getAttribute('data-gap') ? this.getAttribute('data-gap') : "20px";
-      this.firstChild.style.textTransform = "uppercase";
+      this.firstElementChild.style.textTransform = "uppercase";
 
       if(direction == "right") {
-        this.firstChild.style.marginLeft = gap;
-        this.wrapper.append(this.hline, this.firstChild);
+        this.firstElementChild.style.marginLeft = gap;
+        this.wrapper.append(this.hline, this.firstElementChild);
       }
       else {
-        this.firstChild.style.marginRight = gap;
-        this.wrapper.append(this.firstChild, this.hline);
+        this.firstElementChild.style.marginRight = gap;
+        this.wrapper.append(this.firstElementChild, this.hline);
       }
 
     } else {
@@ -476,14 +479,17 @@ var addWindowResizeEvent = (() => {
   };
 })();
 
-terminalResolution.textContent = `${getViewportWidth()}x${getViewportHeight()}`;
+
 customElements.define('h-line', HorizontalLine);
 customElements.define('info-table', InfoTable);
 customElements.define('carousel-timeline', CarouselTimeline);
 
-addWindowResizeEvent(terminalResolution, elem => {
+window.onload = () => contentToScreenRect(terminalResolution);
+addWindowResizeEvent(terminalResolution, elem => contentToScreenRect(elem));
+
+function contentToScreenRect(elem) {
   elem.textContent = `${getViewportWidth()}x${getViewportHeight()}`;
-});
+}
 
 function clamp(n, min, max) {
   return Math.min(Math.max(n, min), max);
