@@ -19,9 +19,6 @@
 * {
   font-family: monospace, monospace;
   color: #6D8086;
-  padding: 0px;
-  margin: 0px;
-  box-sizing: border-box;
 }
 
 p, input.link, .label, .text, input, textarea {
@@ -122,25 +119,17 @@ body {
 }
 
 #contact-form > input[type="submit"], .input-container > * {
-  border-style: solid;
-  border-width: 1px 1px 6px 1px;
-  border-color: var(--main-color);
   padding: 12px 20px;
-  background-color: var(--page-background-color);
 }
 
 #contact-form > input[type="submit"] {
-  border-width: 1px;
-  display: block;
   margin: auto;
   margin-top: 60px;
-  min-width: 20%;
-  cursor: pointer;
 }
 
 #contact-form > input[type="submit"]:active {
- color: #CBCB41;
- border-color: #CBCB41;
+  color: #CBCB41;
+  border-color: #CBCB41;
 }
 
 .input-container > textarea {
@@ -188,23 +177,4 @@ body {
   .input-container > [name="area"] {
     grid-area: area;
   }
-}
-
-/*
-  * Modifier Classes
-*/
-
-.flexbox-center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.flexbox-row {
-  display: flex;
-}
-
-.flexbox-column {
-  display: flex;
-  flex-direction: column;
 }
