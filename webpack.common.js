@@ -9,7 +9,7 @@ const plugins = [
   }),
   new PreloadWebpackPlugin({
     rel: 'preload',
-    include: ['main']
+    include: 'all'
   }),
   new MiniCssExtractPlugin({
     filename: '[name].[contenthash].css',
