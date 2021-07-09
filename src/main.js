@@ -8,7 +8,7 @@ class Node extends HTMLElement {
     this.attachShadow({mode: 'open'});
 
     if(this._onwindowResize)
-      addWindowResizeEvent(this, () => this._onwindowResize())
+      addWindowEvent('resize', () => this._onwindowResize())
 
     if(this.parentNode)
       this.bootstrapCallback()
@@ -30,10 +30,13 @@ class Node extends HTMLElement {
         let DOMRoot = this.getRootNode();
         let styleSheets = DOMRoot.styleSheets;
         let length = DOMRoot.styleSheets.length;
-
+        let shadowRoot = this.shadowRoot;
+        let duplicatedSheets = [];
+        
         for(let i = 0; i < length; ++i) {
-          this.shadowRoot.insertBefore(styleSheets[length - i - 1].ownerNode.cloneNode(true), this.shadowRoot.firstElementChild)
-        }
+          duplicatedSheets.push(styleSheets[i].ownerNode.cloneNode(true));
+          shadowRoot.insertBefore(styleSheets[length - i - 1].ownerNode.cloneNode(true), shadowRoot.firstElementChild)
+        };
       }
 
       if(sharedCSS) {
@@ -468,14 +471,14 @@ class CarouselTimeline extends Node {
 
 var minDesktopWidth = 768; 
 var terminalResolution = document.getElementById('terminal-resolution');
-var addWindowResizeEvent = (() => {
+var addWindowEvent = (() => {
   const callbackMap = new Map();
 
-  const runAllCallbacks = (f, elem) => f(elem);
+  const runAllCallbacks = (f, vargs) => f(vargs);
 
-  return (element, callback) => { 
-    callbackMap.set(element, callback);
-    window.onresize = () => callbackMap.forEach(runAllCallbacks);
+  return (winEvent, callback, vargs) => { 
+    callbackMap.set(vargs, callback);
+    window.addEventListener(winEvent, () => callbackMap.forEach(runAllCallbacks))
   };
 })();
 
@@ -485,7 +488,7 @@ customElements.define('info-table', InfoTable);
 customElements.define('carousel-timeline', CarouselTimeline);
 
 window.onload = () => contentToScreenRect(terminalResolution);
-addWindowResizeEvent(terminalResolution, elem => contentToScreenRect(elem));
+addWindowEvent('resize', elem => contentToScreenRect(elem), terminalResolution);
 
 function contentToScreenRect(elem) {
   elem.textContent = `${getViewportWidth()}x${getViewportHeight()}`;

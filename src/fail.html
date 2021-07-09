@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title> Scr1pti3's Portfolio </title>
+    <link rel="stylesheet" href="component.css">
+    <link rel="stylesheet" href="main.css">
+    <style>
+    #responseContainer {
+      width: clamp(600px, 50%, 50%);
+      padding: 30px;
+    }
+
+    #responseContainer > h1 {
+      margin-bottom: 30px;
+    }
+
+    #okBtn {
+      margin: 4rem auto 1rem auto;
+    }
+    </style>
+  </head>
+  <body>
+    <main class="flexbox-center" style="height: 100vh;">
+      <div class="border-blend" id="responseContainer">
+        <h1>Failed to submit</h1>
+        <p>
+          I'm sorry for the inconvenience. Currently the server can't accept queries due to large traffic. Please try again later in a couple of minutes. 
+          If this problem persists after an hour, you can contact me on my social media accounts.
+        </p>
+        <a href="/"><button id="okBtn" class="button-blend border-blend">Ok</button></a>
+      </div>
+    </main>
+  </body>
+</html>
