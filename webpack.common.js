@@ -1,15 +1,19 @@
 const path = require('path');
-const PreloadWebpackPlugin = require('@vue/preload-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const plugins = [
   new HtmlWebpackPlugin({
     template: './index.html',
+    favicon: './favicon.svg'
   }),
-  new PreloadWebpackPlugin({
-    rel: 'preload',
-    include: 'all'
+  new HtmlWebpackPlugin({
+    template: './ok.html',
+    filename: 'ok.html'
+  }),
+  new HtmlWebpackPlugin({
+    template: './fail.html',
+    filename: 'fail.html'
   }),
   new MiniCssExtractPlugin({
     filename: '[name].[contenthash].css',
