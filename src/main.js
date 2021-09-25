@@ -1,3 +1,6 @@
+import PortfolioThumbnail from './portfolio_thumbnail.png'
+import ChessPizzaThumbnail from './chessPizza_thumbnail.png'
+
 class Node extends HTMLElement {
   constructor() {
     super()
@@ -32,7 +35,7 @@ class Node extends HTMLElement {
         let length = DOMRoot.styleSheets.length;
         let shadowRoot = this.shadowRoot;
         let duplicatedSheets = [];
-        
+
         for(let i = 0; i < length; ++i) {
           duplicatedSheets.push(styleSheets[i].ownerNode.cloneNode(true));
           shadowRoot.insertBefore(styleSheets[length - i - 1].ownerNode.cloneNode(true), shadowRoot.firstElementChild)
@@ -51,6 +54,9 @@ class Node extends HTMLElement {
   }
 
   connectedCallback() {
+    if(!this.isConnected)
+      return
+    
     if(this.parentNode)
       this.bootstrapCallback()
 
@@ -210,8 +216,20 @@ class CarouselTimeline extends Node {
     this._pagination.setAttribute('class', 'pagination');
     this._virtualize(this._pagination);
 
-    for (let x = 0; x < 5; ++x) // temp
-      this.addItem(`https://via.placeholder.com/300x300`, "Lorem Ipsum", 
+
+    this.addItem(PortfolioThumbnail, "Portfolio Site",
+      `This is the same portfolio site that you are currently on. I made this
+      site from scratch using Webcomponents, pure CSS and HTML for the front-end. 
+      The source code for the front-end of this site is made available in my Github repo, 
+      tho the back-end is not open for the public.`, "https://github.com/scr1pti3/portfolio"
+    );
+
+    this.addItem(ChessPizzaThumbnail, "Chess Pizza",
+      `CHESS Pizza is a 2D, pixel art, top-down, horror-adventure game, where you try to save your pizzeria by making gross pizzas for an unknown customer. The game was made in collaboration with other wonderful people, my role was as a programmer. You can check out more about this game by pressing the read more button below`, "https://atumsk.itch.io/chess-pizza"
+    )
+
+    for (let x = 0; x < 3; ++x) // temp
+      this.addItem(`https://via.placeholder.com/1920x1080`, "Lorem Ipsum", 
         `Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
         Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, 
         when an unknown printer took a galley of type and scrambled it to make a type specimen book.`
@@ -245,6 +263,11 @@ class CarouselTimeline extends Node {
         transition: all 1s;
         min-width: 100%; 
       }
+
+      .carousel-item img {
+          width: 100%;
+          height: 40vh;
+       }
 
       .description {
         margin: 1rem 0rem;
@@ -288,7 +311,7 @@ class CarouselTimeline extends Node {
       @media only screen and (min-width: ${minDesktopWidth}px) {
         .carousel-item {
           min-width: calc((100% - ${this._carouselItemGap}px) / 2 );
-        }
+        } 
       }
     `;
 
