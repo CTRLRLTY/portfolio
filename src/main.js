@@ -1,5 +1,8 @@
-import PortfolioThumbnail from './portfolio_thumbnail.png'
-import ChessPizzaThumbnail from './chessPizza_thumbnail.png'
+import PortfolioThumbnail from './portfolio_thumbnail.png';
+import ChessPizzaThumbnail from './chessPizza_thumbnail.png';
+import SecurityPlusThumbnail from './securityPlus_thumbnail.png';
+import SurverDataGeneratorThumbnail from './surveyDataGenerator_thumbnail.png';
+import PrimeGeneratorThumbnail from './primeGenerator_thumbnail.png';
 
 class Node extends HTMLElement {
   constructor() {
@@ -217,18 +220,30 @@ class CarouselTimeline extends Node {
     this._virtualize(this._pagination);
 
 
-    this.addItem(PortfolioThumbnail, "Portfolio Site",
-      `This is the same portfolio site that you are currently on. I made this
-      site from scratch using Webcomponents, pure CSS and HTML for the front-end. 
-      The source code for the front-end of this site is made available in my Github repo, 
-      tho the back-end is not open for the public.`, "https://github.com/scr1pti3/portfolio"
+    this.addItem(PortfolioThumbnail, "About Me Page",
+      `This is the same page that you are currently on. I made it from scratch using Web components, pure CSS and HTML for the front-end. The back-end is also made from scratch, and the page is hosted using a VPS. I have made the source code for the front-end available in my Github repo, tho the back-end is not open for the public.`,
+      "https://github.com/scr1pti3/portfolio"
     );
 
     this.addItem(ChessPizzaThumbnail, "Chess Pizza",
-      `CHESS Pizza is a 2D, pixel art, top-down, horror-adventure game, where you try to save your pizzeria by making gross pizzas for an unknown customer. The game was made in collaboration with other wonderful people, my role was as a programmer. You can check out more about this game by pressing the read more button below`, "https://atumsk.itch.io/chess-pizza"
-    )
+      `CHESS Pizza is a 2D, pixel art, top-down, horror-adventure game, where you try to save your pizzeria by making gross pizzas for an unknown customer. The game was made in collaboration with other wonderful people, my role was as a programmer. You can check out more about this game by pressing the read more button below.`,
+      "https://atumsk.itch.io/chess-pizza"
+    );
 
-    for (let x = 0; x < 3; ++x) // temp
+    this.addItem(SecurityPlusThumbnail, "CompTIA Security+ Certificate",
+      `I took this certificate some time ago when Covid was starting to ruin my college experience. Due to me being bored at home doing online classes, I took it upon myself to study the certification exam objectives, then I scheduled for the exam. Now here I am with this certificate for no reason at all :-)`, 
+      'https://www.credly.com/badges/96265fe8-590e-45b2-99f4-4b122c8ef8bf'
+    );
+
+    this.addItem(SurverDataGeneratorThumbnail, "Survey Data Generator",
+    `I actually don't know what this is supposed to be lol. It just happen that a friend of mine needed some sample data for their survey or whatever, so to help them, I made this thing in like 2 day~ish. Haha. It uses IndexDB for persistent storage cuz I'm too lazy to implement a real database. At the end of the day, it works, I guess. Also, the source code is available in my Github repo.`,
+    'https://scr1pti3.github.io/survey-data-generator/');
+
+    this.addItem(PrimeGeneratorThumbnail, "Prime Generator",
+    `This little project is self-explanatory. It generates prime numbers. I made this when I was working with my professor for his Journal since we needed some quick prime numbers. That's all there is to is, it just generates prime numbers that end with either {1,3,7,9}. The source code is available in my Github repo.`, 
+    "https://scr1pti3.github.io/prime-generator/");
+
+    for (let x = 0; x < 2; ++x) // temp
       this.addItem(`https://via.placeholder.com/1920x1080`, "Lorem Ipsum", 
         `Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
         Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, 
