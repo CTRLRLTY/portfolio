@@ -158,7 +158,8 @@ class InfoTable extends Node {
 
     const nameRow = this._createInfoRow("NAME", "MUHAMMAD RAZNAN");
     const emailRow = this._createInfoRow("EMAIL", "***********@**********.com");
-    const githubRow = document.createElement('a').appendChild(this._createInfoRow('GITHUB', "https://github.com/scr1pti3"));
+    const twitterRow = this._createInfoRow('TWITTER', "<a href='https://twitter.com/scr1pti3'>https://twitter.com/scr1pti3</a>");
+    const githubRow = this._createInfoRow('GITHUB', "<a href='https://github.com/scr1pti3'>https://github.com/scr1pti3</a>");
 
     style.textContent = `
       table {
@@ -168,15 +169,15 @@ class InfoTable extends Node {
 
       .label { 
         width: 100px;
-        color: ${labelColor}
+        color: ${labelColor};
       }
       .seperator {
         width: 30px;
-        color: ${seperatorColor}
+        color: ${seperatorColor};
       }
     `;
 
-    table.append(colgroup, nameRow, emailRow, githubRow);
+    table.append(colgroup, nameRow, emailRow, twitterRow, githubRow);
 
     this.shadowRoot.append(style, table)
   }
