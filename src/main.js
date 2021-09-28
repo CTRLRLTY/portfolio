@@ -48,7 +48,7 @@ class Node extends HTMLElement {
       if(sharedCSS) {
         const externalCSS = document.createElement('link');
         externalCSS.setAttribute('rel', 'stylesheet');
-        externalCSS.setAttribute('href', sharedCSS);
+        externalCSS.setAttribute('href', import(sharedCSS));
         this.shadowRoot.appendChild(externalCSS);
       }
 
