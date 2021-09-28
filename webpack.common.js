@@ -37,7 +37,7 @@ module.exports = {
   plugins,
   context: path.resolve(__dirname, 'src'),
   entry: { 
-    main: ['./main.js', './component.css', './main.css'],
+    main: ['./main.js', './font_size.css', './component.css', './main.css'],
   },
   output: {
     filename: '[name].[contenthash].js',
